@@ -1,5 +1,6 @@
 package com.example.skillsdaantest
 
+import androidx.annotation.RestrictTo
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
@@ -24,13 +26,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.res.painterResource
@@ -42,13 +47,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Preview(showBackground = true)
 @Composable
 fun Login(nav: NavController = rememberNavController()) {
+    val scope = rememberCoroutineScope()
     var email by rememberSaveable { mutableStateOf<String>("") }
     var password by rememberSaveable { mutableStateOf<String>("") }
     var passwordCheck by rememberSaveable { mutableStateOf<String>("") }
+    var showError by rememberSaveable { mutableStateOf(false) }
+    var showErrorReason by rememberSaveable { mutableStateOf<String>("") }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -88,7 +98,9 @@ fun Login(nav: NavController = rememberNavController()) {
                             value = email,
                             onValueChange = { email = it },
                             singleLine = true,
-                            modifier = Modifier.height(20.dp)
+                            modifier = Modifier
+                                .height(20.dp)
+                                .fillMaxWidth()
                         )
                     }
                     Sh(5.dp)
@@ -108,7 +120,9 @@ fun Login(nav: NavController = rememberNavController()) {
                             value = password,
                             onValueChange = { password = it },
                             singleLine = true,
-                            modifier = Modifier.height(20.dp)
+                            modifier = Modifier
+                                .height(20.dp)
+                                .fillMaxWidth()
                         )
                     }
                     Sh(5.dp)
@@ -119,8 +133,38 @@ fun Login(nav: NavController = rememberNavController()) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(bottom = 50.dp)
             ) {
+                if (showError) {
+                    Text(
+                        showErrorReason,
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(Color.Red)
+                            .padding(10.dp)
+                    )
+                    Sh(10.dp)
+                }
                 Button(
-                    onClick = {},
+                    onClick = {
+                        if (email.isEmpty() || password.isEmpty()) {
+                            scope.launch {
+                                showError = true
+                                showErrorReason = "請輸入密碼或電子郵件"
+                                delay(2000)
+                                showError = false
+                            }
+                        }
+//                        else if (!password.matches("^*@*.*".toRegex())) {
+//                            scope.launch {
+//                                showError = true
+//                                showErrorReason = "電子郵件格式錯誤"
+//                                delay(2000)
+//                                showError = false
+//                            }
+//                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(Color(0xFF123617f)),
                     shape = RoundedCornerShape(20)
